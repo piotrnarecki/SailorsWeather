@@ -1,10 +1,16 @@
 package pl.piotrnarecki.sailorsweather
 
 import android.app.Dialog
+import android.content.Context
+import android.content.Intent
+import android.location.LocationManager
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
+import com.google.gson.Gson
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.DataOutputStream
@@ -22,9 +28,45 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        CallAPILoginAsyncTask("User", "Password").execute()
+
+        if (!isLocationEnabled()) {
+
+            Toast.makeText(
+                this,
+                "Your location provider is turned off. Please turn it on.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+
+        } else {
+
+            Toast.makeText(
+                this,
+                "Your location provider is already turned on.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+
+        }
+
+//        CallAPILoginAsyncTask("User", "Password").execute()
 
     }
+
+
+    private fun isLocationEnabled(): Boolean {
+
+        val locationManager: LocationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+
+
+    }
+
 
     private inner class CallAPILoginAsyncTask(val username: String, val password: String) :
         AsyncTask<Any, Void, String>() {
@@ -56,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                 connection.doOutput = true;
 
 
-                //  przesylanie na serwer  
+                //  przesylanie na serwer
                 connection.instanceFollowRedirects = false
 
                 connection.requestMethod = "POST"
@@ -69,8 +111,8 @@ class MainActivity : AppCompatActivity() {
                 val writeOutputStream = DataOutputStream(connection.outputStream)
 
                 val jsonRequest = JSONObject()
-                jsonRequest.put("username",username)
-                jsonRequest.put(password,password)
+                jsonRequest.put("username", username)
+                jsonRequest.put(password, password)
 
                 writeOutputStream.writeBytes(jsonRequest.toString())
 
@@ -136,6 +178,12 @@ class MainActivity : AppCompatActivity() {
                 Log.i("JSON RESPONSE RESULT", result)
             }
 
+
+            // nowe, z uzyciem GSON
+            val responeData = Gson().fromJson(result, ResponseData::class.java)
+
+
+            // stare podejscie
             val jsonObject = JSONObject(result)
             val name = jsonObject.optString("name")
 
