@@ -369,6 +369,9 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_refresh -> {
                 requestLocationData()
+                setupUI()
+
+
                 Log.i("REFRESH", "REFRESH !!!")
 
                 true
