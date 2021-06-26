@@ -13,6 +13,9 @@ object Constants {
 
     const val METRIC_UNIT:String = "metric"
 
+    const val PREFERENCES_NAME = "WeatherAppPreferences"
+    const val WEATHER_RESPONSE_DATA = "weather_response_data"
+
 
 
     fun isNetworkAvailable(context: Context): Boolean {
