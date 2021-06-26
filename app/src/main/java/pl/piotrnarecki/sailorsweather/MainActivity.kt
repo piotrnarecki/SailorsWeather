@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
+    private var mProgressDialog: Dialog? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -154,6 +156,12 @@ class MainActivity : AppCompatActivity() {
                 service.getWeather(latitude, longitude, Constants.METRIC_UNIT, Constants.APP_ID)
 
 
+
+            showProgressDialog()
+
+
+
+
             listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onResponse(
                     call: Call<WeatherResponse>,
@@ -161,6 +169,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     if (response!!.isSuccessful) {
 
+                        hideProgressDialog()
                         val weatherList: WeatherResponse? = response.body()
                         Log.i("Response Result", "$weatherList")
 
@@ -185,7 +194,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+
+                    hideProgressDialog()
                     Log.i("Error ", t!!.message.toString())
+
                 }
 
 
@@ -239,144 +251,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun showProgressDialog() {
+        mProgressDialog = Dialog(this@MainActivity)
 
-    private inner class CallAPILoginAsyncTask(val username: String, val password: String) :
-        AsyncTask<Any, Void, String>() {
+        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
 
-        private lateinit var customProgressDialog: Dialog
+        mProgressDialog!!.show()
 
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-
-            showProgressDialog()
+    }
 
 
+    private fun hideProgressDialog() {
+        if (mProgressDialog != null) {
+            mProgressDialog!!.dismiss()
         }
-
-
-        override fun doInBackground(vararg p0: Any?): String {
-
-            var result: String
-
-            var connection: HttpURLConnection? = null
-
-            try {
-                val url = URL("https://run.mocky.io/v3/3bc458ab-619d-47ad-9898-346586ea0cb6")
-
-                connection = url.openConnection() as HttpURLConnection
-
-                connection.doInput = true;
-                connection.doOutput = true;
-
-
-                //  przesylanie na serwer
-                connection.instanceFollowRedirects = false
-
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.setRequestProperty("charset", "utf-8")
-                connection.setRequestProperty("Accept", "application/json")
-
-                connection.useCaches = false
-
-                val writeOutputStream = DataOutputStream(connection.outputStream)
-
-                val jsonRequest = JSONObject()
-                jsonRequest.put("username", username)
-                jsonRequest.put(password, password)
-
-                writeOutputStream.writeBytes(jsonRequest.toString())
-
-                writeOutputStream.flush()
-                writeOutputStream.close()
-
-
-                //
-                val httpResults: Int = connection.responseCode
-
-                if (httpResults == HttpURLConnection.HTTP_OK) {
-
-                    val inputStream = connection.inputStream
-
-                    val reader = BufferedReader(InputStreamReader(inputStream))
-
-                    val stringBuilder = StringBuilder()
-
-                    var line: String?
-
-                    try {
-                        while (reader.readLine().also { line = it } != null) {
-                            stringBuilder.append(line + "\n")
-
-                        }
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    } finally {
-
-                        try {
-                            inputStream.close()
-                        } catch (e: IOException) {
-                            e.printStackTrace()
-                        }
-
-
-                    }
-                    result = stringBuilder.toString()
-                } else {
-                    result = connection.responseMessage
-                }
-            } catch (e: SocketTimeoutException) {
-                result = "Connection Timeout"
-
-            } catch (e: Exception) {
-                result = "Error: ${e.message}"
-
-            } finally {
-                connection?.disconnect()
-            }
-
-            return result
-        }
-
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-
-            cancelProgressDialog()
-
-
-            if (result != null) {
-                Log.i("JSON RESPONSE RESULT", result)
-            }
-
-
-            // nowe, z uzyciem GSON
-            val responeData = Gson().fromJson(result, ResponseData::class.java)
-
-
-            // stare podejscie
-            val jsonObject = JSONObject(result)
-            val name = jsonObject.optString("name")
-
-
-        }
-
-        private fun showProgressDialog() {
-            customProgressDialog = Dialog(this@MainActivity)
-
-            customProgressDialog.setContentView(R.layout.dialog_custom_progress)
-
-            customProgressDialog.show()
-
-        }
-
-
-        private fun cancelProgressDialog() {
-            customProgressDialog.dismiss()
-
-        }
-
 
     }
 

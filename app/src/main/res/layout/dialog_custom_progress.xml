@@ -4,20 +4,19 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="10dp"
-    >
+    android:padding="10dp">
 
     <ProgressBar
-        android:layout_width="50dp"
-        android:layout_height="50sp"
-        android:layout_marginEnd="10dp"></ProgressBar>
+        android:layout_width="@dimen/progress_bar_size"
+        android:layout_height="@dimen/progress_bar_size"
+        android:layout_marginEnd="@dimen/progress_bar_marginEnd"></ProgressBar>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Please wait"
+        android:text="@string/please_wait"
         android:textColor="@android:color/black"
-        android:textSize="16sp"></TextView>
+        android:textSize="@dimen/progress_bar_text_size"></TextView>
 
 
 </LinearLayout>
