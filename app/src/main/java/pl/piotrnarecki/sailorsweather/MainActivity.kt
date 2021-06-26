@@ -5,7 +5,9 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.lang.Exception
@@ -20,11 +22,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        CallAPILoginAsyncTask().execute()
+        CallAPILoginAsyncTask("User", "Password").execute()
 
     }
 
-    private inner class CallAPILoginAsyncTask() : AsyncTask<Any, Void, String>() {
+    private inner class CallAPILoginAsyncTask(val username: String, val password: String) :
+        AsyncTask<Any, Void, String>() {
 
         private lateinit var customProgressDialog: Dialog
 
@@ -52,6 +55,30 @@ class MainActivity : AppCompatActivity() {
                 connection.doInput = true;
                 connection.doOutput = true;
 
+
+                //  przesylanie na serwer  
+                connection.instanceFollowRedirects = false
+
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("charset", "utf-8")
+                connection.setRequestProperty("Accept", "application/json")
+
+                connection.useCaches = false
+
+                val writeOutputStream = DataOutputStream(connection.outputStream)
+
+                val jsonRequest = JSONObject()
+                jsonRequest.put("username",username)
+                jsonRequest.put(password,password)
+
+                writeOutputStream.writeBytes(jsonRequest.toString())
+
+                writeOutputStream.flush()
+                writeOutputStream.close()
+
+
+                //
                 val httpResults: Int = connection.responseCode
 
                 if (httpResults == HttpURLConnection.HTTP_OK) {
@@ -106,8 +133,13 @@ class MainActivity : AppCompatActivity() {
 
 
             if (result != null) {
-                Log.i("JSON RESPONSE RESULT",result)
+                Log.i("JSON RESPONSE RESULT", result)
             }
+
+            val jsonObject = JSONObject(result)
+            val name = jsonObject.optString("name")
+
+
         }
 
         private fun showProgressDialog() {
