@@ -15,6 +15,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.location.*
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                 .withListener(object : MultiplePermissionsListener {
                     override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                         if (report!!.areAllPermissionsGranted()) {
-                            // TODO (STEP 7: Call the location request function here.)
+
                             requestLocationData()
                         }
 
@@ -275,14 +277,14 @@ class MainActivity : AppCompatActivity() {
             tv_main_description.text = weatherList.weather[i].description
             tv_temp.text =
                 weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
-            tv_humidity.text = weatherList.main.humidity.toString() + " per cent"
+            tv_humidity.text = weatherList.main.humidity.toString() + " %"
             tv_min.text = weatherList.main.tempMin.toString() + " min"
             tv_max.text = weatherList.main.tempMax.toString() + " max"
             tv_speed.text = weatherList.wind.speed.toString()
             tv_name.text = weatherList.name
             tv_country.text = weatherList.sys.country
-            tv_sunrise_time.text = unixTime(weatherList.sys.sunrise.toLong())
-            tv_sunset_time.text = unixTime(weatherList.sys.sunset.toLong())
+            tv_sunrise_time.text = unixTime(weatherList.sys.sunrise)
+            tv_sunset_time.text = unixTime(weatherList.sys.sunset)
 
             // Here we update the main icon
             when (weatherList.weather[i].icon) {
@@ -326,9 +328,31 @@ class MainActivity : AppCompatActivity() {
     private fun unixTime(timex: Long): String? {
         val date = Date(timex * 1000L)
         @SuppressLint("SimpleDateFormat") val sdf =
-            SimpleDateFormat("HH:mm:ss")
+            SimpleDateFormat("HH:mm")
         sdf.timeZone = TimeZone.getDefault()
         return sdf.format(date)
     }
+
+    // menu gorne
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        return when (item.itemId) {
+            R.id.action_refresh -> {
+                requestLocationData()
+                Log.i("REFRESH","REFRESH !!!")
+
+                true
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
+        }
+    }
+
 
 }
